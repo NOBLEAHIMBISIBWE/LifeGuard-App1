@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LifeGuard</string>
+    <string name="app_subtitle">Uganda National GBV Platform</string>
+    <string name="tagline">Your voice matters. Your safety matters.</string>
+    <string name="tagline_desc">Report GBV or sexual harassment safely and confidentially. Every report is reviewed by trained officials.</string>
+
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Home</string>
+    <string name="nav_sos">SOS Alert</string>
+    <string name="nav_contacts">Contacts</string>
+    <string name="nav_history">Cases</string>
+    <string name="nav_device">Device</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Emergency Danger Banner -->
+    <string name="emergency_danger_text">In immediate danger? Tap here for emergency contacts.</string>
+    <string name="police_number">999</string>
+    <string name="gbv_helpline">0800 200 600</string>
+    <string name="childline">116</string>
+    <string name="ambulance_number">911</string>
+
+    <!-- Buttons & Actions -->
+    <string name="btn_report_incident">Report an Incident</string>
+    <string name="btn_anonymous_report">Anonymous Reporting Available</string>
+    <string name="btn_anonymous_report_desc">You can submit a report without revealing your identity. A tracking token lets you follow up later.</string>
+    <string name="btn_my_reports">My Reports</string>
+    <string name="btn_support_services">Support Services</string>
+    <string name="btn_emergency_call">Emergency</string>
+    <string name="btn_chat_support">Chat Support</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <!-- FAQs text -->
+    <string name="faq_title">Frequently Asked Questions</string>
+    <string name="faq_q1">What is LifeGuard?</string>
+    <string name="faq_a1">LifeGuard is Uganda\'s national digital platform for Gender-Based Violence (GBV) and sexual harassment prevention, confidential incident reporting, wearable SOS dispatch, and AI counseling support.</string>
+    <string name="faq_q2">How does anonymous reporting work?</string>
+    <string name="faq_a2">Anonymous reporting removes all personal identifiers (name, email, phone) from the submission. You receive a secret tracking token (e.g., TOKEN-LG-123456) to check status without signing in.</string>
+
+    <!-- Privacy Policy -->
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="privacy_content">LifeGuard complies with the Data Protection and Privacy Act of Uganda. All data is end-to-end encrypted. User location data is shared only during active SOS broadcasts with authorized responders.</string>
+
+    <!-- Terms of Service -->
+    <string name="terms_title">Terms of Service</string>
+    <string name="terms_content">By using LifeGuard, you agree to report genuine emergencies and incidents responsibly. Misuse of emergency alert services is prohibited under Ugandan cyber laws.</string>
+</resources>

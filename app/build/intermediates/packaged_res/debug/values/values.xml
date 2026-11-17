@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="amber_dark">#D97706</color>
+    <color name="amber_light">#FEF3C7</color>
+    <color name="amber_primary">#F59E0B</color>
+    <color name="background">#F8FAFC</color>
+    <color name="black">#000000</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="emergency_danger">#A61C1C</color>
+    <color name="emergency_red">#DC2626</color>
+    <color name="primary">#C81E1E</color>
+    <color name="primary_dark">#A61C1C</color>
+    <color name="primary_light">#FFF5F5</color>
+    <color name="slate_100">#F1F5F9</color>
+    <color name="slate_200">#E2E8F0</color>
+    <color name="slate_300">#CBD5E1</color>
+    <color name="slate_400">#94A3B8</color>
+    <color name="slate_50">#F8FAFC</color>
+    <color name="slate_500">#64748B</color>
+    <color name="slate_600">#475569</color>
+    <color name="slate_700">#334155</color>
+    <color name="slate_800">#1E293B</color>
+    <color name="slate_900">#0F172A</color>
+    <color name="status_cancelled">#64748B</color>
+    <color name="status_dispatched">#8B5CF6</color>
+    <color name="status_resolved">#10B981</color>
+    <color name="status_review">#F59E0B</color>
+    <color name="status_submitted">#3B82F6</color>
+    <color name="white">#FFFFFF</color>
+    <string name="ambulance_number">911</string>
+    <string name="app_name">LifeGuard</string>
+    <string name="app_subtitle">Uganda National GBV Platform</string>
+    <string name="btn_anonymous_report">Anonymous Reporting Available</string>
+    <string name="btn_anonymous_report_desc">You can submit a report without revealing your identity. A tracking token lets you follow up later.</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_chat_support">Chat Support</string>
+    <string name="btn_emergency_call">Emergency</string>
+    <string name="btn_my_reports">My Reports</string>
+    <string name="btn_report_incident">Report an Incident</string>
+    <string name="btn_support_services">Support Services</string>
+    <string name="childline">116</string>
+    <string name="emergency_danger_text">In immediate danger? Tap here for emergency contacts.</string>
+    <string name="faq_a1">LifeGuard is Uganda\'s national digital platform for Gender-Based Violence (GBV) and sexual harassment prevention, confidential incident reporting, wearable SOS dispatch, and AI counseling support.</string>
+    <string name="faq_a2">Anonymous reporting removes all personal identifiers (name, email, phone) from the submission. You receive a secret tracking token (e.g., TOKEN-LG-123456) to check status without signing in.</string>
+    <string name="faq_q1">What is LifeGuard?</string>
+    <string name="faq_q2">How does anonymous reporting work?</string>
+    <string name="faq_title">Frequently Asked Questions</string>
+    <string name="gbv_helpline">0800 200 600</string>
+    <string name="nav_contacts">Contacts</string>
+    <string name="nav_device">Device</string>
+    <string name="nav_history">Cases</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_sos">SOS Alert</string>
+    <string name="police_number">999</string>
+    <string name="privacy_content">LifeGuard complies with the Data Protection and Privacy Act of Uganda. All data is end-to-end encrypted. User location data is shared only during active SOS broadcasts with authorized responders.</string>
+    <string name="privacy_title">Privacy Policy</string>
+    <string name="tagline">Your voice matters. Your safety matters.</string>
+    <string name="tagline_desc">Report GBV or sexual harassment safely and confidentially. Every report is reviewed by trained officials.</string>
+    <string name="terms_content">By using LifeGuard, you agree to report genuine emergencies and incidents responsibly. Misuse of emergency alert services is prohibited under Ugandan cyber laws.</string>
+    <string name="terms_title">Terms of Service</string>
+    <style name="Theme.LifeGuard" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="colorSecondary">@color/amber_primary</item>
+        <item name="colorSecondaryVariant">@color/amber_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+    <style name="Theme.LifeGuard.NoActionBar" parent="Theme.LifeGuard">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

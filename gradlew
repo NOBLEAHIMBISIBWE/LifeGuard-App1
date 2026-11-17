@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+export PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin:$PATH"
+export JAVACMD="/usr/lib/jvm/java-21-openjdk-amd64/bin/java"
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+PRG="$0"
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+CDPATH="" cd "`dirname \"$PRG\"`" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+exec "$JAVACMD" "-Dorg.gradle.appname=$APP_BASE_NAME" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

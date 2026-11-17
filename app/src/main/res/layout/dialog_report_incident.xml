@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Report an Incident"
+        android:textColor="@color/slate_900"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Type of Incident"
+        android:textColor="@color/slate_700"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp" />
+
+    <Spinner
+        android:id="@+id/spinnerIncidentType"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ugandan District"
+        android:textColor="@color/slate_700"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <Spinner
+        android:id="@+id/spinnerDistrict"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location / GPS (OpenStreetMap Auto-Detected)"
+        android:textColor="@color/slate_700"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/etIncidentLocation"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Locating via OpenStreetMap GPS..."
+        android:background="@color/slate_100"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:textSize="13sp"
+        android:layout_marginTop="4dp" />
+
+    <EditText
+        android:id="@+id/etIncidentDesc"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:hint="Describe what happened in detail..."
+        android:gravity="top|start"
+        android:padding="12dp"
+        android:background="@color/slate_100"
+        android:textSize="13sp"
+        android:layout_marginTop="12dp" />
+
+    <Button
+        android:id="@+id/btnSubmitReport"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="Submit Incident Report"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/amber_primary"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
