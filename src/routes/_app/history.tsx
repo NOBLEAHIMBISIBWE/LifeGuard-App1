@@ -249,7 +249,7 @@ function HistoryPage() {
           <Input
             value={tokenQuery}
             onChange={(e) => setTokenQuery(e.target.value)}
-            placeholder="TOKEN-LG-XXXXXX"
+            placeholder="TOKEN-LG-XXXXXXXXXXXXXXXXXXXX"
             className="h-10 rounded-xl bg-white text-xs font-mono"
           />
           <Button
