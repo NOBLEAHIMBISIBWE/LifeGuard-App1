@@ -119,7 +119,7 @@ function HomePage() {
     [
       {
         sender: "bot",
-        text: "Hello, I am the LifeGuard Confidential Help Assistant. How can we support you today?",
+        text: "Hello. I am LifeGuard's automated support guide. This chat is not monitored by a counselor and cannot dispatch emergency services. If you are in immediate danger, call Police 999 or the GBV Helpline 0800 200 600.",
       },
     ],
   );
@@ -375,7 +375,7 @@ function HomePage() {
         ...prev,
         {
           sender: "bot",
-          text: "Thank you for reaching out. Your message is encrypted and private. A certified counseling support officer will respond shortly, or you can call helpline 0800 200 600.",
+          text: "Thank you for reaching out. This automated guide cannot contact a counselor or emergency services. If you need immediate help, call Police 999 or the GBV Helpline 0800 200 600. To request case follow-up, submit a report through LifeGuard.",
         },
       ]);
     }, 1000);
@@ -1000,8 +1000,8 @@ function HomePage() {
                   <Bot className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold leading-tight">LifeGuard Confidential Chat</h3>
-                  <p className="text-[10px] text-white/80 leading-tight">24/7 Verified Support</p>
+                  <h3 className="text-sm font-bold leading-tight">LifeGuard Support Guide</h3>
+                  <p className="text-[10px] text-white/80 leading-tight">Automated information — not monitored</p>
                 </div>
               </div>
               <button
