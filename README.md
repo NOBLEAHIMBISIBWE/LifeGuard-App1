@@ -1,6 +1,6 @@
 # LifeGuard — Uganda National GBV Platform
 
-LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) and sexual harassment prevention, confidential incident reporting, wearable SOS dispatch, AI counseling support, and emergency responder coordination.
+LifeGuard is a Uganda-focused emergency and confidential incident-reporting application prototype for Gender-Based Violence (GBV), sexual harassment, medical incidents, wearable SOS reporting, and coordination between citizens and authorized response staff.
 
 ---
 
