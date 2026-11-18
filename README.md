@@ -115,7 +115,7 @@ on conflict (user_id, role) do nothing;
 
 Create responder accounts in the same way, changing `'admin'` to `'responder'`. Do not let users assign their own roles.
 
-Email/password authentication is wired to Supabase Auth. Enable and configure the Phone provider and an SMS provider in Supabase before relying on phone/password sign-in. Configure email confirmation and password-reset redirect URLs for your deployed app domain.
+Email/password authentication is wired to Supabase Auth. The registration form currently creates email-based Auth accounts and stores the phone number as profile metadata; phone/password sign-in therefore also requires a Supabase Auth account whose actual Auth phone field is verified. A complete phone-based registration and verification flow remains to be implemented. Configure email confirmation and password-reset redirect URLs for your deployed app domain.
 
 Evidence file names are currently stored with the incident; actual evidence file uploads to Supabase Storage require a separate private bucket and storage policies.
 
@@ -132,8 +132,8 @@ Evidence file names are currently stored with the incident; actual evidence file
 
 ```sh
 # 1. Clone repository
-git clone <repository-url>
-cd lifeguard
+git clone https://github.com/NOBLEAHIMBISIBWE/LifeGuard-App1.git
+cd LifeGuard-App1
 
 # 2. Install dependencies
 npm install
