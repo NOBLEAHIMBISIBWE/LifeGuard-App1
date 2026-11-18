@@ -9,7 +9,7 @@ function isNewSupabaseApiKey(value: string): boolean {
 // The public URL can be reachable only from the browser, so server requests go to the runtime URL of the same backend.
 function serverSupabaseUrl(publicUrl: string, supabaseKey: string): string | undefined {
   if (typeof window !== "undefined" || typeof process === "undefined") return undefined;
-  const serverUrl = process.env["SUPABASE_URL"]?.replace(/\\/+$/, "");
+  const serverUrl = process.env["SUPABASE_URL"]?.replace(/\/+$/, "");
   if (
     !serverUrl ||
     serverUrl === publicUrl ||
@@ -20,7 +20,7 @@ function serverSupabaseUrl(publicUrl: string, supabaseKey: string): string | und
 }
 
 function createSupabaseFetch(supabaseUrl: string, supabaseKey: string): typeof fetch {
-  const publicUrl = supabaseUrl.replace(/\\/+$/, "");
+  const publicUrl = supabaseUrl.replace(/\/+$/, "");
   const serverUrl = serverSupabaseUrl(publicUrl, supabaseKey);
   return (input, init) => {
     const headers = new Headers(
