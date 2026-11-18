@@ -160,12 +160,18 @@ function AuthPage() {
         });
         if (error) throw error;
 
-        if (data.session) {
-          toast.success("Account created successfully!");
-          nav({ to: "/home" });
-        } else {
-          setSent("Your account was created. Check your email for the confirmation link, then return here to sign in.");
+        if (!data.user) {
+          throw new Error("We could not complete your account registration. Please try again.");
         }
+
+        if (!data.session) {
+          throw new Error(
+            "Your account was created, but email confirmation is still enabled. Please contact the administrator to disable email confirmation before signing in.",
+          );
+        }
+
+        toast.success("Your LifeGuard account has been created successfully!");
+        nav({ to: "/home" });
       } else if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
