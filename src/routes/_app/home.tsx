@@ -227,7 +227,7 @@ function HomePage() {
         id: savedId,
         type: category || dbType,
         db_type: dbType,
-        status: "submitted",
+        status: remoteSaved ? "submitted" : "failed",
         created_at: new Date().toISOString(),
         is_test: false,
         is_anonymous: false,
