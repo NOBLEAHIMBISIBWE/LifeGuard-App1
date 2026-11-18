@@ -38,8 +38,8 @@ Deno.serve(async (req: Request) => {
   });
 
   try {
-    const forwardedFor = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const clientIp = forwardedFor || req.headers.get("cf-connecting-ip") || "unknown";
+    const forwardedFor = req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim();
+    const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || forwardedFor || "unknown";
     const digest = await crypto.subtle.digest(
       "SHA-256",
       new TextEncoder().encode(`${clientIp}:${serviceRoleKey}`),
