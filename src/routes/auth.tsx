@@ -432,48 +432,25 @@ function AuthPage() {
             </>
           ) : mode === "signin" ? (
             <>
-              {/* Dynamic Email / Phone Field */}
-              {authMethod === "email" ? (
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-900">
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input
-                      id="email"
-                      type="email"
-                      placeholder=""
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full h-14 pl-12 pr-4 rounded-2xl border border-rose-300 bg-white text-sm text-slate-900 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all shadow-2xs"
-                    />
-                  </div>
-                  {errors["email"] && (
-                    <p className="text-xs text-rose-600 font-medium mt-1">{errors["email"]}</p>
-                  )}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm font-semibold text-slate-900">
+                  Email Address
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full h-14 pl-12 pr-4 rounded-2xl border border-rose-300 bg-white text-sm text-slate-900 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all shadow-2xs"
+                  />
                 </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-sm font-semibold text-slate-900">
-                    Phone Number
-                  </Label>
-                  <div className="relative">
-                    <PhoneIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                    <input
-                      id="phone"
-                      type="tel"
-                      placeholder="e.g. +256 700 000 000"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full h-14 pl-12 pr-4 rounded-2xl border border-rose-300 bg-white text-sm text-slate-900 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all shadow-2xs"
-                    />
-                  </div>
-                  {errors["phone"] && (
-                    <p className="text-xs text-rose-600 font-medium mt-1">{errors["phone"]}</p>
-                  )}
-                </div>
-              )}
+                {errors["email"] && (
+                  <p className="text-xs text-rose-600 font-medium mt-1">{errors["email"]}</p>
+                )}
+              </div>
 
               {/* Password Field */}
               <div className="space-y-1.5 pt-1">
