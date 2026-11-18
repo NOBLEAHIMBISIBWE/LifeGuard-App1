@@ -11,6 +11,7 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<string[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -45,9 +46,11 @@ export function useAuth() {
   useEffect(() => {
     if (!user) {
       setRoles([]);
+      setRolesLoading(false);
       return;
     }
     let cancelled = false;
+    setRolesLoading(true);
     (async () => {
       try {
         const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
@@ -58,6 +61,8 @@ export function useAuth() {
         if (!cancelled) {
           setRoles([]);
         }
+      } finally {
+        if (!cancelled) setRolesLoading(false);
       }
     })();
     return () => {
@@ -65,5 +70,5 @@ export function useAuth() {
     };
   }, [user]);
 
-  return { user, loading, roles };
+  return { user, loading: loading || rolesLoading, roles };
 }
