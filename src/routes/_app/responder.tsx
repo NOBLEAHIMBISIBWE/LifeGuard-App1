@@ -33,7 +33,7 @@ type I = {
 };
 
 function Responder() {
-  const { roles, user } = useAuth();
+  const { roles, user, loading: authLoading } = useAuth();
   const [items, setItems] = useState<I[]>([]);
   const allowed = roles.includes("responder") || roles.includes("admin");
   const load = () =>
@@ -57,14 +57,25 @@ function Responder() {
   }, [allowed]);
 
   async function setStatus(id: string, status: "acknowledged" | "resolved") {
-    await supabase.from("incidents").update({ status, responder_id: user!.id }).eq("id", id);
-    await supabase
+    if (!user) return;
+    const { error } = await supabase
+      .from("incidents")
+      .update({ status, responder_id: user.id })
+      .eq("id", id);
+    if (error) {
+      console.error("Unable to update incident status:", error.message);
+      window.alert("The incident could not be updated. Check your responder permissions and try again.");
+      return;
+    }
+    const { error: eventError } = await supabase
       .from("incident_events")
       .insert({ incident_id: id, event: `Responder marked ${status}` });
-    load();
+    if (eventError) console.error("Incident status saved, but timeline event failed:", eventError.message);
+    await load();
   }
 
-  if (!allowed) return <p className="px-5 pt-6 text-muted-foreground">Responder access only.</p>;
+  if (authLoading) return <p className="px-5 pt-6 text-muted-foreground">Checking responder access…</p>;
+  if (!allowed) return <p className="px-5 pt-6 text-muted-foreground">Responder access only. Contact a LifeGuard administrator if you need access.</p>;
   return (
     <div className="px-5 pt-6">
       <h1 className="text-2xl font-bold">Active incidents</h1>
