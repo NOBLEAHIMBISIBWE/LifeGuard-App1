@@ -110,6 +110,7 @@ function HomePage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showAnonymousModal, setShowAnonymousModal] = useState(false);
   const [anonymousToken, setAnonymousToken] = useState("");
+  const [anonymousSavedRemotely, setAnonymousSavedRemotely] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
   const [showChatModal, setShowChatModal] = useState(Boolean(search.chat));
   const [reporting, setReporting] = useState(false);
@@ -153,6 +154,7 @@ function HomePage() {
       });
 
       let savedId = localId;
+      let remoteSaved = false;
       try {
         const { data, error: err } = await supabase
           .from("incidents")
@@ -193,6 +195,7 @@ function HomePage() {
           console.warn("Incident insert notice:", err.message);
         } else if (data?.id) {
           savedId = data.id;
+          remoteSaved = true;
         }
       } catch {
         /* local persistence fallback */
@@ -209,7 +212,7 @@ function HomePage() {
           if (evidenceUpdateError) throw evidenceUpdateError;
         } catch (evidenceError) {
           evidenceReferences = files.map((file) => file.name);
-          toast.warning("Your report was saved, but evidence upload failed. Please retry from your report or contact support.");
+          toast.warning("Your report was sent, but evidence upload failed. Please contact support to attach the files.");
           console.warn("Evidence upload failed:", evidenceError);
         }
       } else if (files.length > 0) {
@@ -251,7 +254,11 @@ function HomePage() {
         reviewer_notes: [],
       });
 
-      toast.success("Incident report submitted with location coordinates!");
+      if (remoteSaved) {
+        toast.success("Your incident report was sent to the LifeGuard response system.");
+      } else {
+        toast.error("This report is saved only on this device. It has NOT reached the LifeGuard response team. Check your connection and submit again.");
+      }
       setShowReportModal(false);
     } catch (err) {
       toast.error((err as Error).message);
@@ -287,6 +294,7 @@ function HomePage() {
       });
 
       let savedId = localId;
+      let remoteSaved = false;
       try {
         const { data, error: err } = await supabase
           .from("incidents")
@@ -312,6 +320,7 @@ function HomePage() {
           console.warn("Anonymous incident insert notice:", err.message);
         } else {
           savedId = localId;
+          remoteSaved = true;
         }
       } catch {
         /* local persistence fallback */
@@ -346,7 +355,12 @@ function HomePage() {
       });
 
       setAnonymousToken(token);
-      toast.success("Anonymous report submitted with location coordinates!");
+      setAnonymousSavedRemotely(remoteSaved);
+      if (remoteSaved) {
+        toast.success("Your anonymous report was sent to the LifeGuard response system.");
+      } else {
+        toast.error("This anonymous report is saved only on this device. It has NOT reached the LifeGuard response team. Keep the token and submit again when your connection is restored.");
+      }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -791,11 +805,12 @@ function HomePage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">
-                    Report Submitted Anonymously!
+                    {anonymousSavedRemotely ? "Report Submitted Anonymously!" : "Report Not Yet Sent"}
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                    Your report is encrypted and saved. No personal identifiers or account info were
-                    attached.
+                    {anonymousSavedRemotely
+                      ? "Your report was sent without personal identifiers or account information."
+                      : "This report is stored only on this device and has not reached response staff. Retry when you have a reliable connection."}
                   </p>
                 </div>
 
