@@ -16,7 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mapLink } from "@/lib/location";
 import {
-  findIncidentByToken,
   getLocalIncidents,
   INCIDENTS_CHANGE_EVENT,
   type IncidentNote,
@@ -72,33 +71,6 @@ type EventItem = {
   created_at: string;
 };
 
-const SAMPLE_DEMO_INCIDENTS: IncidentItem[] = [
-  {
-    id: "inc-sample-1",
-    type: "Medical Emergency",
-    status: "dispatched",
-    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    is_test: false,
-    district: "Kampala",
-    latitude: 0.3476,
-    longitude: 32.5825,
-    heart_rate: 98,
-    spo2: 97,
-  },
-  {
-    id: "inc-sample-2",
-    type: "Personal Safety / Assault",
-    status: "submitted",
-    created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    is_test: false,
-    district: "Wakiso",
-    latitude: 0.3136,
-    longitude: 32.5811,
-    heart_rate: null,
-    spo2: null,
-  },
-];
-
 function mergeIncidents(local: StoredIncident[], remote: IncidentItem[]): IncidentItem[] {
   const map = new Map<string, IncidentItem>();
   for (const item of remote) {
@@ -145,7 +117,7 @@ function HistoryPage() {
 
       if (!cancelled) {
         const merged = mergeIncidents(local, remote);
-        setItems(merged.length > 0 ? merged : SAMPLE_DEMO_INCIDENTS);
+        setItems(merged);
       }
     };
 
@@ -212,21 +184,36 @@ function HistoryPage() {
     };
   }, [open, items, matchedTokenItem]);
 
-  const handleTokenLookup = (e: React.FormEvent) => {
+  const handleTokenLookup = async (e: React.FormEvent) => {
     e.preventDefault();
     const q = tokenQuery.trim();
     if (!q) {
-      toast.error("Please enter your tracking token (e.g. TOKEN-LG-123456)");
+      toast.error("Please enter your LifeGuard tracking token.");
       return;
     }
-    const found = findIncidentByToken(q);
-    if (found) {
+    try {
+      const { data, error } = await supabase.functions.invoke("anonymous-case-status", {
+        body: { token: q },
+      });
+      if (error) throw error;
+      if (!data?.case) throw new Error(data?.error || "No report found matching that tracking token.");
+      const found = {
+        ...data.case,
+        description: null,
+        location: null,
+        persons_involved: null,
+        evidence_names: [],
+        latitude: null,
+        longitude: null,
+        heart_rate: null,
+        spo2: null,
+      } as IncidentItem;
       setMatchedTokenItem(found);
       setOpen(found.id);
       toast.success("Anonymous case located!");
-    } else {
+    } catch (error) {
       setMatchedTokenItem(null);
-      toast.error("No report found matching that tracking token.");
+      toast.error(error instanceof Error ? error.message : "Unable to look up this case right now.");
     }
   };
 
