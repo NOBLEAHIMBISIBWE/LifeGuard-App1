@@ -182,7 +182,7 @@ function AuthPage() {
         toast.success("Your LifeGuard account has been created successfully!");
         nav({ to: "/home" });
       } else if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
