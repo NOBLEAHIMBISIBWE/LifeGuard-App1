@@ -79,12 +79,14 @@ function AuthPage() {
   // Validation error states
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { user } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
-    if (user) nav({ to: "/home" });
-  }, [user, nav]);
+    if (user && !authLoading) {
+      nav({ to: roles.includes("admin") ? "/admin" : "/home" });
+    }
+  }, [user, roles, authLoading, nav]);
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -187,7 +189,12 @@ function AuthPage() {
         if (error) throw error;
 
         toast.success("Signed in successfully!");
-        nav({ to: "/home" });
+        const { data: roleRows, error: roleError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id);
+        if (roleError) throw roleError;
+        nav({ to: roleRows?.some((row) => row.role === "admin") ? "/admin" : "/home" });
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: `${window.location.origin}/reset-password`,
