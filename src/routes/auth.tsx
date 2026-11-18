@@ -112,8 +112,15 @@ function AuthPage() {
       if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
         errs["email"] = "Valid email address is required";
       }
-      if (!password || password.length < 8) {
-        errs["password"] = "Password must be at least 8 characters";
+      if (
+        password.length < 12 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/[0-9]/.test(password) ||
+        !/[^A-Za-z0-9]/.test(password)
+      ) {
+        errs["password"] =
+          "Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol";
       }
       if (password !== confirmPassword) {
         errs["confirmPassword"] = "Passwords do not match";
@@ -356,6 +363,9 @@ function AuthPage() {
                 <Label htmlFor="password" className="text-sm font-bold text-slate-900">
                   Password
                 </Label>
+                <p className="text-xs text-slate-500">
+                  At least 12 characters, including uppercase and lowercase letters, a number, and a symbol.
+                </p>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                   <input
