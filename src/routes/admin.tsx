@@ -105,7 +105,7 @@ function formatCoordinateSourceLabel(report: StoredIncident): string {
 }
 
 function AdminPanelPage() {
-  const { user } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
   const [reports, setReports] = useState<StoredIncident[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -527,6 +527,30 @@ function AdminPanelPage() {
       </div>
     </div>
   );
+
+  if (authLoading) {
+    return <div className="p-8 text-center text-sm text-slate-600">Checking administrator access…</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-md p-8 text-center">
+        <h1 className="text-xl font-bold">Sign in required</h1>
+        <p className="mt-2 text-sm text-slate-600">Please sign in with an administrator account.</p>
+        <Link to="/auth" className="mt-4 inline-block text-red-700 underline">Go to sign in</Link>
+      </div>
+    );
+  }
+
+  if (!roles.includes("admin")) {
+    return (
+      <div className="mx-auto max-w-md p-8 text-center">
+        <h1 className="text-xl font-bold">Access restricted</h1>
+        <p className="mt-2 text-sm text-slate-600">This dashboard is available to authorized administrators only.</p>
+        <Link to="/home" className="mt-4 inline-block text-red-700 underline">Return to LifeGuard</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex">
