@@ -133,6 +133,28 @@ function HomePage() {
             type: dbType,
             status: "delivered",
             is_test: false,
+            is_anonymous: false,
+            district,
+            description,
+            location: locationText,
+            persons_involved: personsInvolved || null,
+            date_of_incident: dateOfIncident ? new Date(dateOfIncident).toISOString() : null,
+            evidence_names: files.map((file) => file.name),
+            sender_name:
+              (typeof user?.user_metadata?.["full_name"] === "string" &&
+                user.user_metadata["full_name"].trim()) ||
+              user?.email?.split("@")[0] ||
+              "Registered Citizen",
+            sender_email: user?.email ?? null,
+            sender_phone:
+              typeof user?.user_metadata?.["phone"] === "string"
+                ? user.user_metadata["phone"]
+                : null,
+            sender_nin:
+              typeof user?.user_metadata?.["nin"] === "string"
+                ? user.user_metadata["nin"]
+                : null,
+            coordinate_source: coords.source,
             latitude: coords.lat,
             longitude: coords.lng,
             accuracy: coords.accuracy,
@@ -222,6 +244,14 @@ function HomePage() {
             type: dbType,
             status: "delivered",
             is_test: false,
+            is_anonymous: true,
+            tracking_token: token,
+            district,
+            description,
+            location: locationText,
+            date_of_incident: dateOfIncident ? new Date(dateOfIncident).toISOString() : null,
+            evidence_names: files.map((file) => file.name),
+            coordinate_source: coords.source,
             latitude: coords.lat,
             longitude: coords.lng,
             accuracy: coords.accuracy,
