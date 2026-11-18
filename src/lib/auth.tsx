@@ -2,52 +2,22 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export function getStoredMockUser(): User | null {
-  if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem("lifeguard_mock_user");
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored) as User;
-  } catch {
-    return null;
-  }
-}
-
-export function setStoredMockUser(user: Partial<User> | null) {
-  if (typeof window === "undefined") return;
-  if (!user) {
-    localStorage.removeItem("lifeguard_mock_user");
-    window.dispatchEvent(new CustomEvent("lifeguard-auth-change"));
-    return;
-  }
-  const fullUser: User = {
-    id: user.id || "mock-user-123",
-    app_metadata: user.app_metadata || {},
-    user_metadata: user.user_metadata || {},
-    aud: "authenticated",
-    created_at: user.created_at || new Date().toISOString(),
-    email: user.email || "user@lifeguard.app",
-  };
-  localStorage.setItem("lifeguard_mock_user", JSON.stringify(fullUser));
-  window.dispatchEvent(new CustomEvent("lifeguard-auth-change"));
+export function setStoredMockUser(_user: Partial<User> | null) {
+  // Legacy compatibility: mock sessions are intentionally disabled.
+  if (typeof window !== "undefined") localStorage.removeItem("lifeguard_mock_user");
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(() => getStoredMockUser());
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
-    const handleAuthChange = () => {
-      setUser(getStoredMockUser());
-    };
-    window.addEventListener("lifeguard-auth-change", handleAuthChange);
-
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session?.user) {
         setUser(session.user);
       } else {
-        setUser(getStoredMockUser());
+        setUser(null);
       }
     });
 
@@ -57,11 +27,11 @@ export function useAuth() {
         if (data?.user) {
           setUser(data.user);
         } else {
-          setUser(getStoredMockUser());
+          setUser(null);
         }
       })
       .catch(() => {
-        setUser(getStoredMockUser());
+        setUser(null);
       })
       .finally(() => {
         setLoading(false);
@@ -69,7 +39,6 @@ export function useAuth() {
 
     return () => {
       sub.subscription.unsubscribe();
-      window.removeEventListener("lifeguard-auth-change", handleAuthChange);
     };
   }, []);
 
