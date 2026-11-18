@@ -305,10 +305,8 @@ export const BASELINE_SENDER_REPORTS: StoredIncident[] = [
 ];
 
 export function getAllIncidentsForAdmin(remote: StoredIncident[] = []): StoredIncident[] {
+  // The live admin inbox must contain real submitted cases only, never demonstration seed reports.
   const map = new Map<string, StoredIncident>();
-  for (const seed of BASELINE_SENDER_REPORTS) {
-    map.set(seed.id, seed);
-  }
   for (const item of remote) {
     const prev = map.get(item.id);
     map.set(item.id, { ...prev, ...item });
