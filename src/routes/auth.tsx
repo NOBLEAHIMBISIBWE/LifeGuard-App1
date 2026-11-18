@@ -242,7 +242,7 @@ function AuthPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-4 w-full space-y-4">
-          {/* Email vs Phone Toggle Bar (Only for Sign-In) */}
+          {/* Sign-in method notice */}
           {mode === "signin" && (
             <p className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
               Sign in with the email address used to register. Phone-based sign-in will be enabled after SMS verification is configured.
