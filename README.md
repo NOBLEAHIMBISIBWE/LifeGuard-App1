@@ -39,13 +39,13 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 
 ### 5. ⌚ Wearable SOS Integration (`/device` & `/sos`)
 
-- **Bluetooth Low Energy (BLE)**: Connects with LifeGuard smart wearable devices for hardware panic button triggers.
-- **Screening Health Metrics**: Displays real-time screening sensor readings for Heart Rate (BPM) and SpO2.
-- **SOS Alarm Sequence**: Single-button emergency alert activation with a live cancellation countdown, exact location pin sharing, and automated alert broadcast to responders.
+- **Bluetooth Low Energy (BLE)**: The device screen supports the browser/device BLE workflow where supported. Compatibility must be tested with the target wearable hardware before field use.
+- **Screening Health Metrics**: Displays heart-rate (BPM) and SpO₂ readings supplied by the connected device; readings are not medical diagnoses.
+- **SOS Alarm Sequence**: The app records an SOS incident and makes it visible to authorized responders through the connected Supabase dashboard when online. SMS, voice-call, and external emergency-service dispatch require separate provider integrations and are not yet enabled.
 
-### 6. 💬 24/7 AI Counseling & Chat Support
+### 6. 💬 Automated Support Guide
 
-- **Confidential Chat Assistant**: Interactive live chat interface accessible from the main dashboard or navigation tab, offering instant confidential guidance and crisis resources.
+- **Guided Support Messages**: The in-app guide provides basic safety information and helpline details. It is not a live counselor, is not monitored, and cannot dispatch emergency services. Users in immediate danger should call the listed emergency numbers.
 
 ### 7. 🛡️ First Responder & Dispatcher Portal (`/responder`)
 
