@@ -10,7 +10,7 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 
 - **Dual Sign-In Modes**: Toggle between **Email Address** and **Ugandan Phone Number** authentication.
 - **Registration Form**: Captures Full Name, National ID Number (NIN), Gender selection, Email Address, Password (with eye toggle visibility), and Ugandan Phone Number with `+256` flag selector.
-- **Session Persistence**: Secure persistent authentication state integrated with Supabase and fallback session management.
+- **Session Persistence**: Supabase Auth sessions only; mock/local-storage sign-in fallbacks are disabled.
 
 ### 2. 📋 Incident Reporting Engine (`/home`)
 
@@ -86,16 +86,38 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 
 ## 🛠️ Environment Configuration
 
-Copy `.env.example` to `.env` and configure your API keys:
+Copy `.env.example` to `.env` and set the values from the Supabase project settings.
 
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are browser-safe configuration.
+- `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` are used by server-side functions.
+- `SUPABASE_SERVICE_ROLE_KEY` is a server-only secret. Never prefix it with `VITE_`, commit it, or expose it to a browser.
 
-# Google Maps Platform (Optional for interactive maps)
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+For the configured Supabase project, use its Project URL and publishable key from the Supabase API settings. Add the variables to your local `.env` and to the environment-variable settings of the deployment host.
+
+### Database and access control
+
+The `lifeguard` Supabase project has the core LifeGuard schema provisioned:
+
+- `profiles`, `user_roles`, `contacts`
+- `incidents`, `incident_events`, `health_readings`
+
+Row Level Security is enabled on all six tables. Citizens can access their own records; responders and administrators receive incident access through database roles. Anonymous reports can be submitted without a signed-in account, but anonymous token-based status lookup still needs a protected server-side lookup endpoint before it should be treated as production-ready.
+
+After creating your first account, promote the trusted administrator from the Supabase SQL Editor. Replace the email with the administrator's verified sign-in email:
+
+```sql
+insert into public.user_roles (user_id, role)
+select id, 'admin'::public.app_role
+from auth.users
+where lower(email) = lower('admin@example.com')
+on conflict (user_id, role) do nothing;
 ```
+
+Create responder accounts in the same way, changing `'admin'` to `'responder'`. Do not let users assign their own roles.
+
+Email/password authentication is wired to Supabase Auth. Enable and configure the Phone provider and an SMS provider in Supabase before relying on phone/password sign-in. Configure email confirmation and password-reset redirect URLs for your deployed app domain.
+
+Evidence file names are currently stored with the incident; actual evidence file uploads to Supabase Storage require a separate private bucket and storage policies.
 
 ---
 
