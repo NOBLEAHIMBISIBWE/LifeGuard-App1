@@ -8,7 +8,7 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 
 ### 1. 🔐 Authentication & Identity Management (`/auth`)
 
-- **Dual Sign-In Modes**: Toggle between **Email Address** and **Ugandan Phone Number** authentication.
+- **Email Sign-In**: Email/password registration and sign-in through Supabase Auth. Phone details are retained in the profile metadata; phone/password sign-in remains disabled until an SMS verification provider is configured.
 - **Registration Form**: Captures Full Name, National ID Number (NIN), Gender selection, Email Address, Password (with eye toggle visibility), and Ugandan Phone Number with `+256` flag selector.
 - **Session Persistence**: Supabase Auth sessions only; mock/local-storage sign-in fallbacks are disabled.
 
@@ -18,15 +18,15 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
   - **Category Selection**: GBV, Sexual Harassment, Medical Emergency, Domestic Violence, Assault, Robbery, etc.
   - **District Selection**: Full dropdown list of Ugandan districts (Kampala, Wakiso, Mukono, Jinja, Gulu, Mbarara, etc.).
   - **Location & GPS**: Automatic device geolocation coordinates (`lat, lng`) with manual landmark override.
-  - **Evidence Upload**: Multi-file attachment support for evidence photos, audio clips, and video recordings.
+  - **Private Evidence Upload**: Authenticated reporters can upload up to 10 image, audio, or video files (20 MB each) to a private Supabase Storage bucket. Only the case owner and authorized response staff can read them.
 - **Anonymous Incident Reporting**:
   - **Identity Shielding**: Submits reports confidentially without attaching user profile data, email, or phone numbers.
-  - **Secret Tracking Token**: Automatically generates a unique tracking code (e.g. `TOKEN-LG-839201`) with a 1-tap **Copy** button for safe case follow-up.
+  - **Secret Tracking Token**: Generates a high-entropy tracking code and provides a 1-tap **Copy** button. A rate-limited Edge Function returns only case status, incident category, date, and district; it never returns reporter identity, narrative, or precise coordinates.
 
 ### 3. 📂 Case Tracking & Management (`/history`)
 
 - **Submitted Cases List**: Displays all user-submitted incident reports with status badges (_Submitted_, _Under Review_, _Dispatched_, _Resolved_).
-- **Anonymous Case Lookup**: Dedicated search input enabling anonymous reporters to look up their case status using their secret tracking token without signing in.
+- **Anonymous Case Lookup**: A protected, rate-limited Supabase Edge Function lets reporters check a limited case summary using their tracking token without signing in. Anonymous evidence attachments are intentionally disabled until a separate token-authorized upload flow is implemented.
 
 ### 4. 🚨 Emergency Danger Banner & Contacts (`/contacts`)
 
