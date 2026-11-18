@@ -1055,7 +1055,7 @@ function HomePage() {
             >
               <input
                 type="text"
-                placeholder="Type your message confidentially..."
+                placeholder="Type a message (not sent to a counselor)"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 className="flex-1 h-11 px-4 rounded-2xl border border-slate-200 text-xs focus:outline-none focus:border-rose-400"
