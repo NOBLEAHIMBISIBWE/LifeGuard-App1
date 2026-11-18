@@ -79,7 +79,7 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 ### 10. 🛡️ Admin Incident Panel (`/admin`)
 
 - **Incoming Sender Reports Queue**: Full-width administrative dashboard receiving standard, anonymous, and SOS reports directly from senders in real time.
-- **Sender & Privacy Handling**: Displays sender identity (name, phone, email, NIN) on standard/SOS reports while keeping anonymous reports strictly identity-shielded via their tracking token (`TOKEN-LG-XXXXXX`).
+- **Sender & Privacy Handling**: Displays sender identity (name, phone, email, NIN) on standard/SOS reports while keeping anonymous reports strictly identity-shielded via a high-entropy tracking token (`TOKEN-LG-...`).
 - **Triage, Dispatch & Notes**: Filter by queue, district, or status; inspect GPS map pins and wearable vitals; update case status (`Acknowledge`, `Dispatch Unit`, `Mark Resolved`, `Dismiss`); post official timeline notes synced to the sender; and export filtered reports to CSV.
 
 ---
@@ -101,7 +101,7 @@ The `lifeguard` Supabase project has the core LifeGuard schema provisioned. The 
 - `profiles`, `user_roles`, `contacts`
 - `incidents`, `incident_events`, `health_readings`
 
-Row Level Security is enabled on all six tables. Citizens can access their own records; responders and administrators receive incident access through database roles. Anonymous reports can be submitted without a signed-in account, but anonymous token-based status lookup still needs a protected server-side lookup endpoint before it should be treated as production-ready.
+Row Level Security is enabled on all six tables. Citizens can access their own records; responders and administrators receive incident access through database roles. Anonymous reports can be submitted without a signed-in account. The `anonymous-case-status` Edge Function performs token lookup, rate-limits attempts, and returns only a limited case summary.
 
 After creating your first account, promote the trusted administrator from the Supabase SQL Editor. Replace the email with the administrator's verified sign-in email:
 
@@ -115,9 +115,29 @@ on conflict (user_id, role) do nothing;
 
 Create responder accounts in the same way, changing `'admin'` to `'responder'`. Do not let users assign their own roles.
 
-Email/password authentication is wired to Supabase Auth. The registration form currently creates email-based Auth accounts and stores the phone number as profile metadata; phone/password sign-in therefore also requires a Supabase Auth account whose actual Auth phone field is verified. A complete phone-based registration and verification flow remains to be implemented. Configure email confirmation and password-reset redirect URLs for your deployed app domain.
+Email/password authentication is wired to Supabase Auth. Registration stores the Ugandan phone number as profile metadata. Phone-based sign-in is intentionally hidden until an SMS provider and verified-phone registration flow are configured. Configure email confirmation and password-reset redirect URLs for your deployed app domain.
 
-Evidence file names are currently stored with the incident; actual evidence file uploads to Supabase Storage require a separate private bucket and storage policies.
+The private `incident-evidence` Storage bucket is provisioned with a 20 MB per-file limit and MIME restrictions. Authenticated reporters can upload evidence under their own incident folder; case owners and authorized response staff can read it. Anonymous evidence uploads remain disabled until a token-authorized upload workflow is implemented.
+
+---
+
+## 🚀 Vercel Deployment
+
+The repository includes `vercel.json` and a Vercel-aware Nitro configuration for TanStack Start. Import `NOBLEAHIMBISIBWE/LifeGuard-App1` into Vercel and use the **TanStack Start** framework preset. Keep the root directory at the repository root and use `npm run build` as the build command.
+
+Add these environment variables for Production, Preview, and Development:
+
+- `VITE_SUPABASE_URL` = `https://dsrzhljdjenxttququlo.supabase.co`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = the Supabase project's publishable key
+- `SUPABASE_URL` = the same Supabase project URL
+- `SUPABASE_PUBLISHABLE_KEY` = the same publishable key
+- `VITE_GOOGLE_MAPS_API_KEY` = optional; only if Google Maps features are enabled
+
+Do not put a Supabase service-role or secret key in any `VITE_` variable. The anonymous case lookup Edge Function uses the Supabase-managed Edge Function environment and does not require its service-role key in Vercel.
+
+After the first deployment, set the deployed domain as the Supabase Auth Site URL and add the deployed domain's auth callback/redirect URL in Supabase Authentication → URL Configuration. Redeploy after changing Vercel environment variables.
+
+GitHub Actions runs a production build check on pushes and pull requests to `main`.
 
 ---
 
@@ -125,7 +145,7 @@ Evidence file names are currently stored with the incident; actual evidence file
 
 ### Prerequisites
 
-- Node.js (v18 or v20+)
+- Node.js 22
 - npm / bun
 
 ### Installation & Execution
@@ -149,7 +169,7 @@ npm run build
 
 ## 🧱 Tech Stack
 
-- **Frontend Framework**: React 18 + Vite + TanStack Router / Start
+- **Frontend Framework**: React 19 + Vite + TanStack Router / Start
 - **Styling**: Tailwind CSS + Lucide React Icons
 - **Backend & Auth**: Supabase Auth & Database Client
 - **Type Safety**: TypeScript
