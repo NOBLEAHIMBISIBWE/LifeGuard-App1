@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { setStoredMockUser, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 
 type Mode = "signin" | "signup" | "forgot";
 type AuthMethod = "email" | "phone";
@@ -168,55 +168,25 @@ function AuthPage() {
             },
           },
         });
+        if (error) throw error;
 
-        if (error) {
-          setStoredMockUser({
-            email: email.trim(),
-            user_metadata: {
-              full_name: fullName.trim(),
-              phone: fullPhone,
-              nin: nin.trim(),
-              gender,
-            },
-          });
-        } else if (!data?.session) {
-          const { error: signInErr } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
-          });
-          if (signInErr) {
-            setStoredMockUser({
-              email: email.trim(),
-              user_metadata: {
-                full_name: fullName.trim(),
-                phone: fullPhone,
-                nin: nin.trim(),
-                gender,
-              },
-            });
-          }
-        }
-        toast.success("Account created & signed in successfully!");
-        nav({ to: "/home" });
-      } else if (mode === "signin") {
-        if (authMethod === "email") {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
-          });
-          if (error) {
-            setStoredMockUser({
-              email: email.trim(),
-              user_metadata: { full_name: email.split("@")[0] },
-            });
-          }
+        if (data.session) {
+          toast.success("Account created successfully!");
+          nav({ to: "/home" });
         } else {
-          setStoredMockUser({
-            id: `phone-${phone.replace(/[^0-9]/g, "")}`,
-            email: `${phone.replace(/[^0-9]/g, "")}@lifeguard.app`,
-            user_metadata: { full_name: `User (${phone})`, phone: phone.trim() },
-          });
+          setSent("Your account was created. Check your email for the confirmation link, then return here to sign in.");
         }
+      } else if (mode === "signin") {
+        const fullPhone = phone.startsWith("+")
+          ? phone.trim()
+          : `+256${phone.replace(/^0+/, "").trim()}`;
+        const credentials =
+          authMethod === "email"
+            ? { email: email.trim(), password }
+            : { phone: fullPhone, password };
+        const { error } = await supabase.auth.signInWithPassword(credentials);
+        if (error) throw error;
+
         toast.success("Signed in successfully!");
         nav({ to: "/home" });
       } else {
