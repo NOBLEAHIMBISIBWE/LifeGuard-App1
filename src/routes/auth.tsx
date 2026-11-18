@@ -20,7 +20,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 type Mode = "signin" | "signup" | "forgot";
-type AuthMethod = "email" | "phone";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { mode?: Mode | undefined } => ({
@@ -64,7 +63,6 @@ function UgandaFlag() {
 function AuthPage() {
   const search = Route.useSearch();
   const [mode, setMode] = useState<Mode>(search.mode ?? "signin");
-  const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
@@ -92,18 +90,10 @@ function AuthPage() {
     const errs: Record<string, string> = {};
 
     if (mode === "signin") {
-      if (authMethod === "email") {
-        if (!email.trim()) {
-          errs["email"] = "Email address is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-          errs["email"] = "Please enter a valid email address";
-        }
-      } else {
-        if (!phone.trim()) {
-          errs["phone"] = "Phone number is required";
-        } else if (!/^\+?[0-9 ()-]{7,20}$/.test(phone.trim())) {
-          errs["phone"] = "Enter a valid phone number";
-        }
+      if (!email.trim()) {
+        errs["email"] = "Email address is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        errs["email"] = "Please enter a valid email address";
       }
 
       if (!password) {
@@ -177,14 +167,10 @@ function AuthPage() {
           setSent("Your account was created. Check your email for the confirmation link, then return here to sign in.");
         }
       } else if (mode === "signin") {
-        const fullPhone = phone.startsWith("+")
-          ? phone.trim()
-          : `+256${phone.replace(/^0+/, "").trim()}`;
-        const credentials =
-          authMethod === "email"
-            ? { email: email.trim(), password }
-            : { phone: fullPhone, password };
-        const { error } = await supabase.auth.signInWithPassword(credentials);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
         if (error) throw error;
 
         toast.success("Signed in successfully!");
@@ -258,39 +244,9 @@ function AuthPage() {
         <form onSubmit={handleSubmit} className="mt-4 w-full space-y-4">
           {/* Email vs Phone Toggle Bar (Only for Sign-In) */}
           {mode === "signin" && (
-            <div className="flex w-full rounded-2xl bg-slate-100 p-1 border border-slate-200/80 mb-6">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMethod("email");
-                  setErrors({});
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium rounded-xl transition-all duration-150 ${
-                  authMethod === "email"
-                    ? "bg-[#D32F2F] text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <Mail className="h-4 w-4" />
-                Email
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthMethod("phone");
-                  setErrors({});
-                }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-medium rounded-xl transition-all duration-150 ${
-                  authMethod === "phone"
-                    ? "bg-[#D32F2F] text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <PhoneIcon className="h-4 w-4" />
-                Phone Number
-              </button>
-            </div>
+            <p className="mb-6 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+              Sign in with the email address used to register. Phone-based sign-in will be enabled after SMS verification is configured.
+            </p>
           )}
 
           {/* Form Fields according to Mode */}
