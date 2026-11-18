@@ -13,14 +13,15 @@ type NavTab = {
 };
 
 function AppLayout() {
-  const { user, loading } = useAuth();
+  const { user, roles, loading } = useAuth();
   const nav = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/auth" });
-  }, [loading, user, nav]);
+    else if (!loading && user && roles.includes("admin")) nav({ to: "/admin" });
+  }, [loading, user, roles, nav]);
 
-  if (loading || !user) return <div className="min-h-screen bg-white" />;
+  if (loading || !user || roles.includes("admin")) return <div className="min-h-screen bg-white" />;
 
   const tabs: NavTab[] = [
     { to: "/home", icon: Home, label: "Home" },
