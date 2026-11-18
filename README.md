@@ -96,7 +96,7 @@ For the configured Supabase project, use its Project URL and publishable key fro
 
 ### Database and access control
 
-The `lifeguard` Supabase project has the core LifeGuard schema provisioned:
+The `lifeguard` Supabase project has the core LifeGuard schema provisioned. The repeatable schema definition is tracked in `supabase/migrations/20261118113000_lifeguard_core_schema.sql`:
 
 - `profiles`, `user_roles`, `contacts`
 - `incidents`, `incident_events`, `health_readings`
