@@ -276,7 +276,7 @@ function HomePage() {
       return;
     }
     const dbType = mapCategoryToIncidentType(category);
-    const token = `TOKEN-LG-${Math.floor(100000 + Math.random() * 900000)}`;
+    const token = `TOKEN-LG-${crypto.randomUUID().replaceAll("-", "").slice(0, 20).toUpperCase()}`;
     const localId = crypto.randomUUID();
 
     try {
