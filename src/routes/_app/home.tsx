@@ -227,7 +227,7 @@ function HomePage() {
     const files = f.getAll("photos").filter((v): v is File => v instanceof File && v.size > 0);
     const dbType = mapCategoryToIncidentType(category);
     const token = `TOKEN-LG-${Math.floor(100000 + Math.random() * 900000)}`;
-    const localId = `anon-${Date.now()}`;
+    const localId = crypto.randomUUID();
 
     try {
       const coords = await resolveReportCoordinates({
@@ -241,6 +241,7 @@ function HomePage() {
         const { data, error: err } = await supabase
           .from("incidents")
           .insert({
+            id: localId,
             type: dbType,
             status: "delivered",
             is_test: false,
@@ -255,14 +256,12 @@ function HomePage() {
             latitude: coords.lat,
             longitude: coords.lng,
             accuracy: coords.accuracy,
-          })
-          .select("id")
-          .single();
+          });
 
         if (err) {
           console.warn("Anonymous incident insert notice:", err.message);
-        } else if (data?.id) {
-          savedId = data.id;
+        } else {
+          savedId = localId;
         }
       } catch {
         /* local persistence fallback */
