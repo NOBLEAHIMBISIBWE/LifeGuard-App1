@@ -11,24 +11,24 @@ import {
   AlertTriangle,
   MessageSquare,
   Upload,
-  MapPin,
-  Phone,
   Siren,
-  LogOut,
   Send,
   Bot,
   Lock,
   Copy,
   Check,
-  User as UserIcon,
+  ShieldCheck,
+  MapPin,
+  LocateFixed,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useLocation } from "@/lib/location";
+import { resolveReportCoordinates, useLocation } from "@/lib/location";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { setStoredMockUser, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
+import { mapCategoryToIncidentType, saveLocalIncident } from "@/lib/incidents";
 
 const UGANDA_DISTRICTS = [
   "Kampala",
@@ -76,7 +76,7 @@ export const Route = createFileRoute("/_app/home")({
 
 function HomePage() {
   const search = Route.useSearch();
-  const { fix } = useLocation();
+  const { fix, error: gpsError, locating, refresh: refreshGps } = useLocation();
   const { user } = useAuth();
   const nav = useNavigate();
 
@@ -85,7 +85,6 @@ function HomePage() {
   const [anonymousToken, setAnonymousToken] = useState("");
   const [copiedToken, setCopiedToken] = useState(false);
   const [showChatModal, setShowChatModal] = useState(Boolean(search.chat));
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [reporting, setReporting] = useState(false);
 
   // Chat support states
@@ -109,22 +108,83 @@ function HomePage() {
     e.preventDefault();
     setReporting(true);
     const f = new FormData(e.currentTarget);
-    const type = String(f.get("type")).trim();
+    const category = String(f.get("type") ?? "").trim();
+    const district = String(f.get("district") ?? "").trim();
+    const description = String(f.get("description") ?? "").trim();
+    const locationText = String(f.get("location") ?? "").trim();
+    const personsInvolved = String(f.get("persons_involved") ?? "").trim();
+    const dateOfIncident = String(f.get("date_of_incident") ?? "").trim();
+    const files = f.getAll("photos").filter((v): v is File => v instanceof File && v.size > 0);
+    const dbType = mapCategoryToIncidentType(category);
+    const localId = `inc-${Date.now()}`;
 
     try {
-      const { error: err } = await supabase.from("incidents").insert({
-        type,
-        status: "submitted",
-        is_test: false,
-        latitude: fix?.lat ?? null,
-        longitude: fix?.lng ?? null,
+      const coords = await resolveReportCoordinates({
+        fix,
+        locationText,
+        district,
       });
 
-      if (err) {
-        console.warn("Incident insert notice:", err.message);
+      let savedId = localId;
+      try {
+        const { data, error: err } = await supabase
+          .from("incidents")
+          .insert({
+            type: dbType,
+            status: "delivered",
+            is_test: false,
+            latitude: coords.lat,
+            longitude: coords.lng,
+            accuracy: coords.accuracy,
+          })
+          .select("id")
+          .single();
+
+        if (err) {
+          console.warn("Incident insert notice:", err.message);
+        } else if (data?.id) {
+          savedId = data.id;
+        }
+      } catch {
+        /* local persistence fallback */
       }
 
-      toast.success("Incident report submitted successfully!");
+      const senderNameMeta = user?.user_metadata?.["full_name"];
+      const senderPhoneMeta = user?.user_metadata?.["phone"];
+      const senderNinMeta = user?.user_metadata?.["nin"];
+
+      saveLocalIncident({
+        id: savedId,
+        type: category || dbType,
+        db_type: dbType,
+        status: "submitted",
+        created_at: new Date().toISOString(),
+        is_test: false,
+        is_anonymous: false,
+        district,
+        description,
+        location: locationText,
+        persons_involved: personsInvolved,
+        date_of_incident: dateOfIncident,
+        evidence_names: files.map((file) => file.name),
+        latitude: coords.lat,
+        longitude: coords.lng,
+        accuracy: coords.accuracy,
+        coordinate_source: coords.source,
+        heart_rate: null,
+        spo2: null,
+        user_id: user?.id ?? null,
+        sender_name:
+          (typeof senderNameMeta === "string" && senderNameMeta.trim()) ||
+          user?.email?.split("@")[0] ||
+          "Registered Citizen",
+        sender_email: user?.email ?? null,
+        sender_phone: typeof senderPhoneMeta === "string" ? senderPhoneMeta : null,
+        sender_nin: typeof senderNinMeta === "string" ? senderNinMeta : null,
+        reviewer_notes: [],
+      });
+
+      toast.success("Incident report submitted with location coordinates!");
       setShowReportModal(false);
     } catch (err) {
       toast.error((err as Error).message);
@@ -137,26 +197,77 @@ function HomePage() {
     e.preventDefault();
     setReporting(true);
     const f = new FormData(e.currentTarget);
-    const type = String(f.get("type")).trim();
+    const category = String(f.get("type") ?? "").trim();
+    const district = String(f.get("district") ?? "").trim();
+    const description = String(f.get("description") ?? "").trim();
+    const locationText = String(f.get("location") ?? "").trim();
+    const dateOfIncident = String(f.get("date_of_incident") ?? "").trim();
+    const files = f.getAll("photos").filter((v): v is File => v instanceof File && v.size > 0);
+    const dbType = mapCategoryToIncidentType(category);
     const token = `TOKEN-LG-${Math.floor(100000 + Math.random() * 900000)}`;
+    const localId = `anon-${Date.now()}`;
 
     try {
-      const { error: err } = await supabase.from("incidents").insert({
-        type,
+      const coords = await resolveReportCoordinates({
+        fix,
+        locationText,
+        district,
+      });
+
+      let savedId = localId;
+      try {
+        const { data, error: err } = await supabase
+          .from("incidents")
+          .insert({
+            type: dbType,
+            status: "delivered",
+            is_test: false,
+            latitude: coords.lat,
+            longitude: coords.lng,
+            accuracy: coords.accuracy,
+          })
+          .select("id")
+          .single();
+
+        if (err) {
+          console.warn("Anonymous incident insert notice:", err.message);
+        } else if (data?.id) {
+          savedId = data.id;
+        }
+      } catch {
+        /* local persistence fallback */
+      }
+
+      saveLocalIncident({
+        id: savedId,
+        type: category || dbType,
+        db_type: dbType,
         status: "submitted",
+        created_at: new Date().toISOString(),
         is_test: false,
         is_anonymous: true,
         tracking_token: token,
-        latitude: fix?.lat ?? null,
-        longitude: fix?.lng ?? null,
+        district,
+        description,
+        location: locationText,
+        date_of_incident: dateOfIncident,
+        evidence_names: files.map((file) => file.name),
+        latitude: coords.lat,
+        longitude: coords.lng,
+        accuracy: coords.accuracy,
+        coordinate_source: coords.source,
+        heart_rate: null,
+        spo2: null,
+        user_id: null,
+        sender_name: "Anonymous Sender",
+        sender_email: null,
+        sender_phone: null,
+        sender_nin: null,
+        reviewer_notes: [],
       });
 
-      if (err) {
-        console.warn("Anonymous incident insert notice:", err.message);
-      }
-
       setAnonymousToken(token);
-      toast.success("Anonymous report submitted!");
+      toast.success("Anonymous report submitted with location coordinates!");
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -191,8 +302,11 @@ function HomePage() {
     }, 1000);
   };
 
+  const fullNameMeta = user?.user_metadata?.["full_name"];
   const userInitial =
-    user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U";
+    (typeof fullNameMeta === "string" && fullNameMeta[0]?.toUpperCase()) ||
+    user?.email?.[0]?.toUpperCase() ||
+    "U";
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 pb-10">
@@ -215,6 +329,14 @@ function HomePage() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          <Link
+            to="/admin"
+            className="p-1.5 text-white/90 hover:text-white transition-colors"
+            title="Admin Dashboard"
+          >
+            <ShieldCheck className="h-5 w-5" />
+          </Link>
+
           <button
             type="button"
             onClick={() => toast.info("No new notifications")}
@@ -450,17 +572,44 @@ function HomePage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="location" className="text-xs font-bold text-slate-800">
-                  Location of the incident
-                </Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="location" className="text-xs font-bold text-slate-800">
+                    Location of the incident
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={refreshGps}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#C81E1E] hover:underline"
+                  >
+                    <LocateFixed className="h-3 w-3" />
+                    {locating ? "Locating..." : fix ? "Refresh GPS" : "Capture GPS"}
+                  </button>
+                </div>
                 <Input
                   id="location"
                   name="location"
                   placeholder="Address, landmark, or GPS"
-                  defaultValue={fix ? `${fix.lat.toFixed(4)}, ${fix.lng.toFixed(4)}` : ""}
+                  defaultValue={fix ? `${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)}` : ""}
                   required
                   className="h-12 rounded-2xl border-slate-200"
                 />
+                <div className="flex items-center gap-1.5 text-[11px] px-1">
+                  <MapPin
+                    className={`h-3 w-3 shrink-0 ${fix ? "text-emerald-600" : "text-slate-400"}`}
+                  />
+                  {fix ? (
+                    <span className="font-mono text-emerald-700">
+                      GPS Coordinates attached: {fix.lat.toFixed(5)}, {fix.lng.toFixed(5)} (±
+                      {Math.round(fix.accuracy)} m)
+                    </span>
+                  ) : (
+                    <span className="text-slate-500">
+                      {gpsError
+                        ? `${gpsError} — coordinates will resolve from address & district.`
+                        : "Coordinates will be captured automatically from GPS, address, or district."}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -678,19 +827,45 @@ function HomePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="anon_location" className="text-xs font-bold text-slate-800">
-                    Location of the incident
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="anon_location" className="text-xs font-bold text-slate-800">
+                      Location of the incident
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={refreshGps}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#C81E1E] hover:underline"
+                    >
+                      <LocateFixed className="h-3 w-3" />
+                      {locating ? "Locating..." : fix ? "Refresh GPS" : "Capture GPS"}
+                    </button>
+                  </div>
                   <Input
                     id="anon_location"
                     name="location"
                     placeholder="Address, landmark, or region"
+                    defaultValue={fix ? `${fix.lat.toFixed(5)}, ${fix.lng.toFixed(5)}` : ""}
                     required
                     className="h-12 rounded-2xl border-slate-200"
                   />
+                  <div className="flex items-center gap-1.5 text-[11px] px-1">
+                    <MapPin
+                      className={`h-3 w-3 shrink-0 ${fix ? "text-emerald-600" : "text-slate-400"}`}
+                    />
+                    {fix ? (
+                      <span className="font-mono text-emerald-700">
+                        GPS Coordinates attached: {fix.lat.toFixed(5)}, {fix.lng.toFixed(5)} (±
+                        {Math.round(fix.accuracy)} m)
+                      </span>
+                    ) : (
+                      <span className="text-slate-500">
+                        Coordinates will resolve automatically from address & district.
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-[#1.5]">
+                <div className="space-y-1.5">
                   <Label htmlFor="anon_date" className="text-xs font-bold text-slate-800">
                     Approximate date/time
                   </Label>

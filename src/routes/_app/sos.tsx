@@ -13,6 +13,12 @@ import {
   FileText,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import {
+  mapCategoryToIncidentType,
+  saveLocalIncident,
+  updateLocalIncidentStatus,
+} from "@/lib/incidents";
 import { useLocation, mapEmbed, mapLink } from "@/lib/location";
 import { useWearable, isStale } from "@/lib/ble";
 import { Button } from "@/components/ui/button";
@@ -54,6 +60,7 @@ const COUNTDOWN = 5;
 function SosPage() {
   const { source, test } = Route.useSearch();
   const nav = useNavigate();
+  const { user } = useAuth();
   const { fix } = useLocation();
   const w = useWearable();
   const [type, setType] = useState<IType>(source === "wearable" ? "other" : "medical");
@@ -122,6 +129,27 @@ function SosPage() {
     const f = fixRef.current;
     const vitalsOk = shareHealth && !isStale(w.vitals.at);
     const incidentId = `inc-${Date.now()}`;
+    const labelMap: Record<IType, string> = {
+      medical: "Medical Emergency",
+      fall: "Accident / Fall",
+      safety: "Personal Safety / SOS",
+      other: "Emergency SOS Alert",
+    };
+
+    const senderNameMeta = user?.user_metadata?.["full_name"];
+    const senderPhoneMeta = user?.user_metadata?.["phone"];
+    const senderNinMeta = user?.user_metadata?.["nin"];
+    const senderDetails = {
+      user_id: user?.id ?? null,
+      sender_name:
+        (typeof senderNameMeta === "string" && senderNameMeta.trim()) ||
+        user?.email?.split("@")[0] ||
+        "SOS User",
+      sender_email: user?.email ?? null,
+      sender_phone: typeof senderPhoneMeta === "string" ? senderPhoneMeta : null,
+      sender_nin: typeof senderNinMeta === "string" ? senderNinMeta : null,
+      description: `SOS alert triggered via ${source ?? "app"}${test ? " (Test Mode)" : ""}.`,
+    };
 
     try {
       const { data, error } = await supabase
@@ -139,6 +167,25 @@ function SosPage() {
         .select("id,status")
         .single();
 
+      const resolvedId = !error && data ? data.id : incidentId;
+      const resolvedStatus = !error && data ? data.status : "delivered";
+
+      saveLocalIncident({
+        id: resolvedId,
+        type: labelMap[type],
+        db_type: mapCategoryToIncidentType(type),
+        status: resolvedStatus,
+        created_at: new Date().toISOString(),
+        is_test: !!test,
+        latitude: f?.lat ?? null,
+        longitude: f?.lng ?? null,
+        accuracy: f?.accuracy ?? null,
+        coordinate_source: f ? "gps" : null,
+        heart_rate: vitalsOk ? w.vitals.hr : null,
+        spo2: vitalsOk ? w.vitals.spo2 : null,
+        ...senderDetails,
+      });
+
       if (!error && data) {
         setIncident(data);
         await supabase.from("incident_events").insert({
@@ -146,11 +193,24 @@ function SosPage() {
           event: `Alert created (${source ?? "app"})${test ? " — TEST" : ""}`,
         });
       } else {
-        // Fallback local mock incident
-        const mockInc = { id: incidentId, status: "delivered" };
-        setIncident(mockInc);
+        setIncident({ id: resolvedId, status: resolvedStatus });
       }
     } catch {
+      saveLocalIncident({
+        id: incidentId,
+        type: labelMap[type],
+        db_type: mapCategoryToIncidentType(type),
+        status: "delivered",
+        created_at: new Date().toISOString(),
+        is_test: !!test,
+        latitude: f?.lat ?? null,
+        longitude: f?.lng ?? null,
+        accuracy: f?.accuracy ?? null,
+        coordinate_source: f ? "gps" : null,
+        heart_rate: vitalsOk ? w.vitals.hr : null,
+        spo2: vitalsOk ? w.vitals.spo2 : null,
+        ...senderDetails,
+      });
       setIncident({ id: incidentId, status: "delivered" });
     }
   }
@@ -160,6 +220,7 @@ function SosPage() {
       nav({ to: "/home" });
       return;
     }
+    updateLocalIncidentStatus(incident.id, "cancelled");
     if (incident.id) {
       try {
         await supabase.from("incidents").update({ status: "cancelled" }).eq("id", incident.id);

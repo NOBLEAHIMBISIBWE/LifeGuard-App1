@@ -81,6 +81,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "LifeGuard connects your wearable to trusted contacts and responders in an emergency.",
       },
+      { property: "og:title", content: "LifeGuard — Smart Emergency Response" },
+      {
+        property: "og:description",
+        content:
+          "LifeGuard connects your wearable to trusted contacts and responders in an emergency.",
+      },
       { name: "theme-color", content: "#ffffff" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

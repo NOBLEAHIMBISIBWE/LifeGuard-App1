@@ -1,9 +1,16 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Home, FileText, LifeBuoy, MessageSquare, Bluetooth } from "lucide-react";
+import { Home, FileText, LifeBuoy, MessageSquare, Bluetooth, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_app")({ component: AppLayout });
+
+type NavTab = {
+  to: "/home" | "/history" | "/contacts";
+  icon: LucideIcon;
+  label: string;
+  search?: { chat?: boolean };
+};
 
 function AppLayout() {
   const { user, loading } = useAuth();
@@ -15,12 +22,12 @@ function AppLayout() {
 
   if (loading || !user) return <div className="min-h-screen bg-white" />;
 
-  const tabs = [
+  const tabs: NavTab[] = [
     { to: "/home", icon: Home, label: "Home" },
     { to: "/history", icon: FileText, label: "My Reports" },
     { to: "/contacts", icon: LifeBuoy, label: "Support" },
     { to: "/home", icon: MessageSquare, label: "Chat Support", search: { chat: true } },
-  ] as const;
+  ];
 
   return (
     <div className="mx-auto min-h-screen max-w-md pb-20 bg-white font-sans text-slate-900">
@@ -31,7 +38,7 @@ function AppLayout() {
             <Link
               key={label}
               to={to}
-              search={search}
+              {...(search ? { search } : {})}
               className="flex flex-col items-center gap-1 px-3 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-900 transition-colors"
               activeProps={{ className: "text-slate-900 font-bold" }}
             >

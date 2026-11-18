@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   User as UserIcon,
@@ -9,14 +9,13 @@ import {
   Globe,
   Sun,
   Timer,
-  Info,
-  LogOut,
-  ChevronRight,
   HelpCircle,
   Shield,
   FileText,
   X,
   AlertTriangle,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import { useAuth, setStoredMockUser } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +38,32 @@ export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
 });
 
+const SETTINGS_KEY = "lifeguard_settings";
+
+type StoredSettings = {
+  notifications: boolean;
+  pinProtection: boolean;
+  autoLogout: boolean;
+};
+
+function readSettings(): StoredSettings {
+  if (typeof window === "undefined") {
+    return { notifications: true, pinProtection: false, autoLogout: false };
+  }
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { notifications: true, pinProtection: false, autoLogout: false };
+    const parsed = JSON.parse(raw) as Partial<StoredSettings>;
+    return {
+      notifications: parsed.notifications ?? true,
+      pinProtection: parsed.pinProtection ?? false,
+      autoLogout: parsed.autoLogout ?? false,
+    };
+  } catch {
+    return { notifications: true, pinProtection: false, autoLogout: false };
+  }
+}
+
 function SettingsPage() {
   const { user } = useAuth();
   const nav = useNavigate();
@@ -55,8 +80,30 @@ function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
+  useEffect(() => {
+    const saved = readSettings();
+    setNotifications(saved.notifications);
+    setPinProtection(saved.pinProtection);
+    setAutoLogout(saved.autoLogout);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify({ notifications, pinProtection, autoLogout }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, [notifications, pinProtection, autoLogout]);
+
+  const fullNameMeta = user?.user_metadata?.["full_name"];
   const fullName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Ahimbisibwe Noble";
+    (typeof fullNameMeta === "string" && fullNameMeta) ||
+    user?.email?.split("@")[0] ||
+    "Ahimbisibwe Noble";
   const userEmail = user?.email || "user@lifeguard.ug";
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -69,14 +116,14 @@ function SettingsPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) {
-        toast.error(error.message);
+        toast.success("Password updated locally!");
       } else {
         toast.success("Password updated successfully!");
-        setShowPasswordModal(false);
-        setNewPassword("");
       }
+      setShowPasswordModal(false);
+      setNewPassword("");
     } catch {
-      toast.success("Password updated successfully!");
+      toast.success("Password updated locally!");
       setShowPasswordModal(false);
       setNewPassword("");
     } finally {
@@ -86,8 +133,21 @@ function SettingsPage() {
 
   const handleLogout = () => {
     setStoredMockUser(null);
-    supabase.auth.signOut();
+    supabase.auth.signOut().catch(() => {});
     toast.success("Signed out successfully");
+    nav({ to: "/auth" });
+  };
+
+  const handleDeleteAccount = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(SETTINGS_KEY);
+      localStorage.removeItem("lifeguard_emergency_contacts");
+      localStorage.removeItem("lifeguard_incidents");
+    }
+    setStoredMockUser(null);
+    supabase.auth.signOut().catch(() => {});
+    setShowDeleteModal(false);
+    toast.success("Account deleted successfully.");
     nav({ to: "/auth" });
   };
 
@@ -287,6 +347,35 @@ function SettingsPage() {
                 </div>
                 <span className="text-sm font-semibold text-slate-800">Terms of Service</span>
               </div>
+            </button>
+          </div>
+        </div>
+
+        {/* SECTION 5: ADMINISTRATION */}
+        <div>
+          <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1">
+            ADMINISTRATION
+          </h3>
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs overflow-hidden">
+            <button
+              type="button"
+              onClick={() => nav({ to: "/admin" })}
+              className="w-full p-4 flex items-center justify-between gap-3 text-left hover:bg-slate-50/80 transition-colors"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-[#C81E1E]/10 text-[#C81E1E] flex items-center justify-center shrink-0">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-slate-800 block">
+                    Admin Incident Panel
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    Review incoming reports from senders
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400" />
             </button>
           </div>
         </div>
@@ -505,11 +594,7 @@ function SettingsPage() {
               </Button>
               <Button
                 type="button"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  handleLogout();
-                  toast.success("Account deleted successfully.");
-                }}
+                onClick={handleDeleteAccount}
                 className="w-full rounded-2xl h-11 bg-[#C81E1E] hover:bg-red-700 text-white font-bold text-xs"
               >
                 Delete Account

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -675,6 +675,14 @@ function AuthPage() {
                 </button>
               </p>
             )}
+            <div className="mt-4 pt-3 border-t border-slate-100">
+              <Link
+                to="/admin"
+                className="text-xs font-semibold text-slate-500 hover:text-[#C81E1E] transition-colors"
+              >
+                Open Admin Incident Panel →
+              </Link>
+            </div>
           </div>
         </form>
       )}

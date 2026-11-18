@@ -76,6 +76,12 @@ LifeGuard is Uganda's national digital platform for Gender-Based Violence (GBV) 
 - **Automatic Geolocation**: Uses browser GPS (`navigator.geolocation`) to auto-populate coordinates.
 - **Google Maps Integration**: Set `VITE_GOOGLE_MAPS_API_KEY` for high-precision interactive Google Maps embeds with automatic OpenStreetMap fallback when unconfigured.
 
+### 10. 🛡️ Admin Incident Panel (`/admin`)
+
+- **Incoming Sender Reports Queue**: Full-width administrative dashboard receiving standard, anonymous, and SOS reports directly from senders in real time.
+- **Sender & Privacy Handling**: Displays sender identity (name, phone, email, NIN) on standard/SOS reports while keeping anonymous reports strictly identity-shielded via their tracking token (`TOKEN-LG-XXXXXX`).
+- **Triage, Dispatch & Notes**: Filter by queue, district, or status; inspect GPS map pins and wearable vitals; update case status (`Acknowledge`, `Dispatch Unit`, `Mark Resolved`, `Dismiss`); post official timeline notes synced to the sender; and export filtered reports to CSV.
+
 ---
 
 ## 🛠️ Environment Configuration

@@ -39,10 +39,7 @@ export function useAuth() {
 
   useEffect(() => {
     const handleAuthChange = () => {
-      const mock = getStoredMockUser();
-      if (mock) {
-        setUser(mock);
-      }
+      setUser(getStoredMockUser());
     };
     window.addEventListener("lifeguard-auth-change", handleAuthChange);
 
@@ -81,12 +78,22 @@ export function useAuth() {
       setRoles([]);
       return;
     }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => setRoles((data ?? []).map((r) => r.role)))
-      .catch(() => setRoles([]));
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+        if (!cancelled) {
+          setRoles((data ?? []).map((r) => r.role));
+        }
+      } catch {
+        if (!cancelled) {
+          setRoles([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   return { user, loading, roles };

@@ -18,6 +18,7 @@ import { Route as AppDeviceRouteImport } from './routes/_app/device'
 import { Route as AppHistoryRouteImport } from './routes/_app/history'
 import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppResponderRouteImport } from './routes/_app/responder'
+import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSosRouteImport } from './routes/_app/sos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AppResponderRoute = AppResponderRouteImport.update({
   path: '/responder',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSosRoute = AppSosRouteImport.update({
   id: '/sos',
   path: '/sos',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof AppHistoryRoute
   '/home': typeof AppHomeRoute
   '/responder': typeof AppResponderRoute
+  '/settings': typeof AppSettingsRoute
   '/sos': typeof AppSosRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/history': typeof AppHistoryRoute
   '/home': typeof AppHomeRoute
   '/responder': typeof AppResponderRoute
+  '/settings': typeof AppSettingsRoute
   '/sos': typeof AppSosRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_app/history': typeof AppHistoryRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/responder': typeof AppResponderRoute
+  '/_app/settings': typeof AppSettingsRoute
   '/_app/sos': typeof AppSosRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/home'
     | '/responder'
+    | '/settings'
     | '/sos'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/home'
     | '/responder'
+    | '/settings'
     | '/sos'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_app/history'
     | '/_app/home'
     | '/_app/responder'
+    | '/_app/settings'
     | '/_app/sos'
   fileRoutesById: FileRoutesById
 }
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResponderRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/sos': {
       id: '/_app/sos'
       path: '/sos'
@@ -230,6 +249,7 @@ interface AppRouteChildren {
   AppHistoryRoute: typeof AppHistoryRoute
   AppHomeRoute: typeof AppHomeRoute
   AppResponderRoute: typeof AppResponderRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppSosRoute: typeof AppSosRoute
 }
 
@@ -239,6 +259,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHistoryRoute: AppHistoryRoute,
   AppHomeRoute: AppHomeRoute,
   AppResponderRoute: AppResponderRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppSosRoute: AppSosRoute,
 }
 

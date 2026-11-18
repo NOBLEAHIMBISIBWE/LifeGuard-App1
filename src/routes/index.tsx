@@ -95,6 +95,14 @@ function Onboarding() {
             I already have an account
           </Link>
         </Button>
+        <div className="pt-2 text-center">
+          <Link
+            to="/admin"
+            className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+          >
+            Open Admin Dashboard →
+          </Link>
+        </div>
       </div>
     </main>
   );
