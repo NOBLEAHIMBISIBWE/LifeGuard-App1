@@ -51,6 +51,33 @@ const UGANDA_DISTRICTS = [
   "Other",
 ];
 
+async function uploadIncidentEvidence(userId: string, incidentId: string, files: File[]): Promise<string[]> {
+  if (files.length > 10) throw new Error("You can attach up to 10 evidence files.");
+  const uploaded: string[] = [];
+  try {
+    for (const file of files) {
+      if (file.size > 20 * 1024 * 1024) {
+        throw new Error(`${file.name} exceeds the 20 MB file limit.`);
+      }
+      if (!["image/jpeg", "image/png", "image/webp", "image/heic", "video/mp4", "video/webm", "audio/mpeg", "audio/mp4", "audio/wav", "audio/webm"].includes(file.type)) {
+        throw new Error(`${file.name} has an unsupported file type.`);
+      }
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100);
+      const path = `${userId}/${incidentId}/${crypto.randomUUID()}-${safeName}`;
+      const { error } = await supabase.storage.from("incident-evidence").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      uploaded.push(path);
+    }
+    return uploaded;
+  } catch (error) {
+    if (uploaded.length) await supabase.storage.from("incident-evidence").remove(uploaded);
+    throw error;
+  }
+}
+
 export const Route = createFileRoute("/_app/home")({
   validateSearch: (s: Record<string, unknown>): { chat?: boolean | undefined } => ({
     chat: s["chat"] === true || s["chat"] === "true" ? true : undefined,
@@ -139,7 +166,7 @@ function HomePage() {
             location: locationText,
             persons_involved: personsInvolved || null,
             date_of_incident: dateOfIncident ? new Date(dateOfIncident).toISOString() : null,
-            evidence_names: files.map((file) => file.name),
+            evidence_names: [],
             sender_name:
               (typeof user?.user_metadata?.["full_name"] === "string" &&
                 user.user_metadata["full_name"].trim()) ||
@@ -171,6 +198,24 @@ function HomePage() {
         /* local persistence fallback */
       }
 
+      let evidenceReferences = files.map((file) => file.name);
+      if (files.length > 0 && user?.id && savedId !== localId) {
+        try {
+          evidenceReferences = await uploadIncidentEvidence(user.id, savedId, files);
+          const { error: evidenceUpdateError } = await supabase
+            .from("incidents")
+            .update({ evidence_names: evidenceReferences })
+            .eq("id", savedId);
+          if (evidenceUpdateError) throw evidenceUpdateError;
+        } catch (evidenceError) {
+          evidenceReferences = files.map((file) => file.name);
+          toast.warning("Your report was saved, but evidence upload failed. Please retry from your report or contact support.");
+          console.warn("Evidence upload failed:", evidenceError);
+        }
+      } else if (files.length > 0) {
+        toast.warning("Your report was saved locally, but attachments could not be uploaded because the case is not yet saved to your account.");
+      }
+
       const senderNameMeta = user?.user_metadata?.["full_name"];
       const senderPhoneMeta = user?.user_metadata?.["phone"];
       const senderNinMeta = user?.user_metadata?.["nin"];
@@ -188,7 +233,7 @@ function HomePage() {
         location: locationText,
         persons_involved: personsInvolved,
         date_of_incident: dateOfIncident,
-        evidence_names: files.map((file) => file.name),
+        evidence_names: evidenceReferences,
         latitude: coords.lat,
         longitude: coords.lng,
         accuracy: coords.accuracy,
@@ -225,6 +270,11 @@ function HomePage() {
     const locationText = String(f.get("location") ?? "").trim();
     const dateOfIncident = String(f.get("date_of_incident") ?? "").trim();
     const files = f.getAll("photos").filter((v): v is File => v instanceof File && v.size > 0);
+    if (files.length > 0) {
+      toast.error("For your privacy, anonymous evidence uploads are not enabled yet. Submit without attachments or sign in to upload evidence securely.");
+      setReporting(false);
+      return;
+    }
     const dbType = mapCategoryToIncidentType(category);
     const token = `TOKEN-LG-${Math.floor(100000 + Math.random() * 900000)}`;
     const localId = crypto.randomUUID();
@@ -909,24 +959,11 @@ function HomePage() {
 
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-800">
-                    Attach evidence (optional)
+                    Evidence attachments
                   </Label>
-                  <div className="flex items-center gap-2">
-                    <Label
-                      htmlFor="anon_photos"
-                      className="cursor-pointer flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-xs font-medium hover:bg-slate-100"
-                    >
-                      <Upload className="h-4 w-4" /> Upload Anonymous Files
-                    </Label>
-                    <input
-                      id="anon_photos"
-                      name="photos"
-                      type="file"
-                      accept="image/*,video/*,audio/*"
-                      multiple
-                      className="hidden"
-                    />
-                  </div>
+                  <p className="text-xs text-slate-500">
+                    Anonymous reports can be submitted without files. To upload sensitive evidence securely, sign in and use the identified reporting form.
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
